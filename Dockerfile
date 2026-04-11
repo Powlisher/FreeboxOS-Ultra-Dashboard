@@ -15,6 +15,10 @@ RUN npm ci
 # Copy source files
 COPY . .
 
+# Build-time env vars (Vite embeds VITE_* vars at build time)
+ARG VITE_LOGO_DEV_TOKEN
+ENV VITE_LOGO_DEV_TOKEN=$VITE_LOGO_DEV_TOKEN
+
 # Build frontend (Vite)
 RUN npm run build
 
