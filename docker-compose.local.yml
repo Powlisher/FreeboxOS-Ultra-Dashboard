@@ -29,8 +29,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      args:
-        - VITE_LOGO_DEV_TOKEN=${VITE_LOGO_DEV_TOKEN:-}
     container_name: freebox-dashboard-local
     ports:
       - "${DASHBOARD_PORT:-7505}:3000"
@@ -39,6 +37,7 @@ services:
       - PORT=3000
       - FREEBOX_HOST=${FREEBOX_HOST:-mafreebox.freebox.fr}
       - FREEBOX_TOKEN_FILE=/app/data/freebox_token.json
+      - VITE_LOGO_DEV_TOKEN=${VITE_LOGO_DEV_TOKEN:-}
     volumes:
       # Persistent storage for Freebox authentication token
       - freebox_dashboard_data:/app/data
