@@ -36,6 +36,24 @@ services:
       - freebox_dashboard_data_dev:/app/data
     restart: unless-stopped
 
+  # MCP Server (optional) — Claude AI integration
+  freebox-mcp:
+    build:
+      context: ./mcp-server
+      dockerfile: Dockerfile
+    container_name: freebox-mcp-dev
+    restart: unless-stopped
+    profiles:
+      - mcp
+    environment:
+      - FREEBOX_HOST=${FREEBOX_HOST:-mafreebox.freebox.fr}
+      - FREEBOX_TOKEN_FILE=/app/data/freebox_token.json
+      - DEBUG=1
+    volumes:
+      - freebox_mcp_data_dev:/app/data
+
 volumes:
   freebox_dashboard_data_dev:
     name: freebox_dashboard_data_dev
+  freebox_mcp_data_dev:
+    name: freebox_mcp_data_dev

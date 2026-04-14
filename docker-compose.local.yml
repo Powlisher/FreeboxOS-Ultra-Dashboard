@@ -60,6 +60,26 @@ services:
     #       cpus: '0.5'
     #       memory: 256M
 
+  # ===========================================
+  # MCP Server (optional) — Claude AI integration
+  # ===========================================
+  # Activate with: docker-compose -f docker-compose.local.yml --profile mcp up -d --build
+  freebox-mcp:
+    build:
+      context: ./mcp-server
+      dockerfile: Dockerfile
+    container_name: freebox-mcp-local
+    restart: unless-stopped
+    profiles:
+      - mcp
+    environment:
+      - FREEBOX_HOST=${FREEBOX_HOST:-mafreebox.freebox.fr}
+      - FREEBOX_TOKEN_FILE=/app/data/freebox_token.json
+    volumes:
+      - freebox_mcp_data:/app/data
+
 volumes:
   freebox_dashboard_data:
     name: freebox_dashboard_data_local
+  freebox_mcp_data:
+    name: freebox_mcp_data_local

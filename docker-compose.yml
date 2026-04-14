@@ -16,6 +16,9 @@
 # Examples:
 #   DASHBOARD_PORT=8080 docker-compose up -d
 #   docker-compose --env-file .env up -d
+#
+# MCP Server (optional — Claude AI integration):
+#   docker-compose --profile mcp up -d
 
 services:
   freebox-dashboard:
@@ -63,7 +66,27 @@ services:
     #       cpus: '0.1'
     #       memory: 128M
 
-# Named volume for persistent token storage
+  # ===========================================
+  # MCP Server (optional) — Claude AI integration
+  # ===========================================
+  # Activate with: docker-compose --profile mcp up -d
+  # See: https://github.com/leto1210/mafreebox-mcpserver
+  freebox-mcp:
+    image: ghcr.io/leto1210/mafreebox-mcpserver:latest
+    container_name: freebox-mcp
+    restart: unless-stopped
+    profiles:
+      - mcp
+    environment:
+      - FREEBOX_HOST=${FREEBOX_HOST:-mafreebox.freebox.fr}
+      - FREEBOX_TOKEN_FILE=/app/data/freebox_token.json
+    volumes:
+      - freebox_mcp_data:/app/data
+    # MCP servers communicate via stdio — no ports exposed
+
+# Named volumes for persistent token storage
 volumes:
   freebox_data:
     name: freebox_dashboard_data
+  freebox_mcp_data:
+    name: freebox_mcp_data

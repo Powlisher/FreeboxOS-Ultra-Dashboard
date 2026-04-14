@@ -194,6 +194,64 @@ L'image Docker est configuree avec les bonnes pratiques de securite :
 
 Merci à [Loule95450](https://github.com/Loule95450) & [Rayandri](https://github.com/Rayandri) pour la pull-request.
 
+## Integration MCP — Piloter la Freebox via Claude AI (Optionnel)
+
+Le dashboard peut etre complete par un serveur [MCP (Model Context Protocol)](https://github.com/leto1210/mafreebox-mcpserver) qui permet de piloter votre Freebox en langage naturel depuis **Claude Desktop**.
+
+Exemples de commandes possibles :
+- *"Quels appareils sont connectes en ce moment ?"*
+- *"Montre-moi les telechargements en cours"*
+- *"Quelle est la temperature de ma Freebox ?"*
+- *"Ouvre le port 8080 vers mon serveur 192.168.1.10"*
+- *"Demarre la VM Ubuntu"*
+
+### Activation
+
+Le serveur MCP est un **profil Docker Compose optionnel** — les utilisateurs qui n'en veulent pas ne sont pas impactes.
+
+```bash
+# Production (image pre-construite)
+docker-compose --profile mcp up -d
+
+# Developpement local (build depuis les sources)
+docker-compose -f docker-compose.local.yml --profile mcp up -d --build
+```
+
+### Configuration Claude Desktop
+
+Editez le fichier de configuration Claude Desktop :
+- **macOS** : `~/Library/Application Support/Claude/claude_desktop_config.json`
+- **Windows** : `%APPDATA%\Claude\claude_desktop_config.json`
+
+```json
+{
+  "mcpServers": {
+    "freebox": {
+      "command": "docker",
+      "args": [
+        "run", "--rm", "-i",
+        "-v", "freebox_mcp_data:/app/data",
+        "-e", "FREEBOX_HOST=mafreebox.freebox.fr",
+        "ghcr.io/leto1210/mafreebox-mcpserver:latest"
+      ]
+    }
+  }
+}
+```
+
+> **`-i` et non `-it`** : Claude Desktop communique via stdio sans TTY.
+
+### Premiere connexion MCP
+
+1. Dans Claude Desktop, demandez : **"Connecte-toi a ma Freebox"**
+2. Claude appellera `freebox_authorize`
+3. **Sur votre Freebox** : un message s'affiche sur l'ecran LCD
+4. **Appuyez sur `>`** pour autoriser l'application
+5. Demandez a Claude : **"Verifie si l'autorisation est accordee"**
+6. Le token est sauvegarde — les prochaines sessions sont automatiques
+
+> Pour plus de details, consultez le [README du serveur MCP](https://github.com/leto1210/mafreebox-mcpserver).
+
 ## Premiere connexion
 
 Au premier lancement, vous devrez autoriser l'application sur la Freebox :
