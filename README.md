@@ -57,6 +57,8 @@ Freebox OS Ultra Dashboard est une interface web alternative pour gerer votre Fr
 ![Screenshot 13](img-capture/13.png)
 ![Screenshot 14](img-capture/14.png)
 ![Screenshot 15](img-capture/15.png)
+![Visualisation Reseau](img-capture/16.png)
+![Visualisation Reseau - Logos](img-capture/17.png)
 </details>
 
 ## Installation Docker (Recommandee)
@@ -148,6 +150,7 @@ docker-compose up -d
 |----------|--------|-------------|
 | `DASHBOARD_PORT` | `7505` | Port d'acces au dashboard |
 | `FREEBOX_HOST` | `mafreebox.freebox.fr` | Hostname de la Freebox |
+| `VITE_LOGO_DEV_TOKEN` | _(vide)_ | Cle API [logo.dev](https://logo.dev) pour les logos des appareils (optionnel) |
 
 ### Mise a jour Docker
 
@@ -256,6 +259,35 @@ Au premier lancement, vous devrez autoriser l'application sur la Freebox :
 - **Historique bande passante** - Graphiques sur 1h, 24h, 7j
 - **Temperatures** - Evolution des temperatures du systeme
 - **Statistiques reseau** - Donnees detaillees de connexion
+
+### Visualisation Reseau
+- **Topologie interactive** - Carte du reseau avec la Freebox au centre, l'ISP et tous les appareils connectes
+- **Flux animes** - Flux de particules animees pour le WiFi, lignes solides pour l'Ethernet
+- **Pan & Zoom** - Navigation libre avec deplacement, zoom molette/boutons et reset
+- **Logos des appareils** - Affichage automatique des logos des marques (Apple, Samsung, Google, etc.) via [logo.dev](https://logo.dev) (optionnel, voir [configuration](#logos-des-appareils-logodev))
+- **Mode sans logo** - Fonctionne sans cle API avec des icones generiques (Lucide Icons)
+
+![Visualisation Reseau](img-capture/16.png)
+
+## Logos des appareils (logo.dev)
+
+La page **Visualisation Reseau** peut afficher les logos des marques (Apple, Samsung, Google, Raspberry Pi, etc.) a cote de chaque appareil connecte. Cette fonctionnalite utilise l'API [logo.dev](https://logo.dev) et est **entierement optionnelle**.
+
+### Avec logos (recommande)
+
+1. Creez un compte gratuit sur [logo.dev](https://logo.dev)
+2. Recuperez votre **cle API publique** depuis le tableau de bord logo.dev
+3. Ajoutez-la dans votre fichier `.env` :
+
+```bash
+VITE_LOGO_DEV_TOKEN=pk_votre_cle_ici
+```
+
+4. Redemarrez l'application
+
+### Sans logos
+
+Si aucune cle API n'est configuree (`VITE_LOGO_DEV_TOKEN` vide ou absent), la visualisation fonctionne normalement avec des **icones generiques** (Lucide Icons) a la place des logos de marques. Aucune erreur ne sera affichee.
 
 ## Installation alternative (Node.js)
 

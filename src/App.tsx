@@ -13,7 +13,7 @@ import {
 } from './components/widgets';
 import { ActionButton, UnsupportedFeature } from './components/ui';
 import { LoginModal, TrafficHistoryModal, WifiSettingsModal, CreateVmModal } from './components/modals';
-import { TvPage, PhonePage, FilesPage, VmsPage, AnalyticsPage, SettingsPage } from './pages';
+import { TvPage, PhonePage, FilesPage, VmsPage, AnalyticsPage, SettingsPage, NetworkPage } from './pages';
 import { usePolling } from './hooks/usePolling';
 import { useConnectionWebSocket } from './hooks/useConnectionWebSocket';
 import {
@@ -213,6 +213,21 @@ const App: React.FC = () => {
     return (
       <div className="min-h-screen bg-[#050505]">
         <LoginModal isOpen={true} />
+      </div>
+    );
+  }
+
+  // Render Network page
+  if (currentPage === 'network') {
+    return (
+      <div className="min-h-screen pb-20 bg-[#050505] text-gray-300 font-sans selection:bg-blue-500/30">
+        <NetworkPage onBack={() => setCurrentPage('dashboard')} />
+        <Footer
+          currentPage={currentPage}
+          onPageChange={handlePageChange}
+          onReboot={handleReboot}
+          onLogout={handleLogout}
+        />
       </div>
     );
   }
