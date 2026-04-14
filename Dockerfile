@@ -22,7 +22,15 @@ ENV VITE_LOGO_DEV_TOKEN=$VITE_LOGO_DEV_TOKEN
 # Build frontend (Vite)
 RUN npm run build
 
-# Stage 2: Production image (target platform)
+# Stage 2: Install production dependencies on native platform
+# (QEMU crashes running npm under arm64 emulation — --ignore-scripts keeps
+# node_modules pure-JS so it's safe to copy across architectures)
+FROM --platform=$BUILDPLATFORM node:20-alpine AS deps
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --omit=dev --ignore-scripts && npm cache clean --force
+
+# Stage 3: Production image (target platform)
 FROM node:20-alpine AS production
 
 # Security: Create non-root user
@@ -34,10 +42,9 @@ WORKDIR /app
 # Create data directory for persistent token storage
 RUN mkdir -p /app/data && chown -R freebox:nodejs /app/data
 
-# Copy package files and install production dependencies only
-# Using --ignore-scripts to avoid native compilation issues with QEMU
+# Copy package files and pre-installed production node_modules from deps stage
 COPY --chown=freebox:nodejs package*.json ./
-RUN npm ci --omit=dev --ignore-scripts && npm cache clean --force
+COPY --chown=freebox:nodejs --from=deps /app/node_modules ./node_modules
 
 # Copy built frontend from builder
 COPY --chown=freebox:nodejs --from=builder /app/dist ./dist
