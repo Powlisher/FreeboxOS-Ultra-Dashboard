@@ -7,8 +7,11 @@
     "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
     "dev:client": "vite",
     "dev:server": "tsx watch server/index.ts",
-    "build": "vite build",
+    "build": "npm run build:client && npm run build:server",
+    "build:client": "vite build",
+    "build:server": "esbuild server/index.ts --bundle --platform=node --target=node20 --format=esm --packages=external --outfile=dist-server/index.js",
     "start": "cross-env NODE_ENV=production tsx server/index.ts",
+    "start:prod": "cross-env NODE_ENV=production node dist-server/index.js",
     "preview": "vite preview"
   },
   "dependencies": {
