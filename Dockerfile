@@ -3,7 +3,12 @@
 # Multi-stage build for production deployment
 # ===========================================
 
-# Stage 1: Build frontend (native platform for speed)
+# Stage 1: Build frontend AND bundle backend (native platform for speed)
+# The server is pre-compiled to plain JavaScript via esbuild so the
+# production image does NOT need tsx/esbuild at runtime. This fixes the
+# multi-arch "You installed esbuild for another platform" crash on ARM64
+# hosts (Freebox Ultra VM, Raspberry Pi, Apple Silicon) that hit issue #69
+# after #63.
 FROM --platform=$BUILDPLATFORM node:20-alpine AS builder
 
 WORKDIR /app
@@ -19,7 +24,7 @@ COPY . .
 ARG VITE_LOGO_DEV_TOKEN
 ENV VITE_LOGO_DEV_TOKEN=$VITE_LOGO_DEV_TOKEN
 
-# Build frontend (Vite)
+# Build frontend (Vite -> dist/) AND bundle backend (esbuild -> dist-server/index.js)
 RUN npm run build
 
 # Stage 2: Install production dependencies on native platform
@@ -31,6 +36,8 @@ COPY package*.json ./
 RUN npm ci --omit=dev --ignore-scripts && npm cache clean --force
 
 # Stage 3: Production image (target platform)
+# Runs plain Node on a pre-bundled JS entrypoint — no TypeScript, no tsx,
+# no native esbuild binary required at runtime.
 FROM node:20-alpine AS production
 
 # Security: Create non-root user
@@ -46,12 +53,9 @@ RUN mkdir -p /app/data && chown -R freebox:nodejs /app/data
 COPY --chown=freebox:nodejs package*.json ./
 COPY --chown=freebox:nodejs --from=deps /app/node_modules ./node_modules
 
-# Copy built frontend from builder
+# Copy built frontend and pre-bundled backend from builder
 COPY --chown=freebox:nodejs --from=builder /app/dist ./dist
-
-# Copy backend source (TypeScript files - tsx runs them directly)
-COPY --chown=freebox:nodejs --from=builder /app/server ./server
-COPY --chown=freebox:nodejs --from=builder /app/tsconfig.json ./
+COPY --chown=freebox:nodejs --from=builder /app/dist-server ./dist-server
 
 # Environment variables with defaults
 ENV NODE_ENV=production
@@ -69,5 +73,5 @@ USER freebox
 # Expose port
 EXPOSE 3000
 
-# Start the server directly with tsx (not through npm to avoid double process)
-CMD ["node_modules/.bin/tsx", "server/index.ts"]
+# Run the pre-bundled server directly with Node (no tsx, no runtime transpile)
+CMD ["node", "dist-server/index.js"]
